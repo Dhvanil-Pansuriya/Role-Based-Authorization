@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Added useEffect
 import axios from 'axios';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -11,24 +11,61 @@ interface ValidationErrors {
     gender?: string;
 }
 
+// Add interface for Role
+interface Role {
+    _id: string;
+    name: string;
+    description: string;
+}
+
 const AddUser: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
-        role: 0,
+        role: '', // Changed from 0 to '' since we'll use role name or ID
         gender: '',
     });
 
+    const [roles, setRoles] = useState<Role[]>([]); // Added state for roles
     const [errors, setErrors] = useState<ValidationErrors>({});
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null);
 
     const NAME_CHAR_LIMIT = 255;
     const EMAIL_CHAR_LIMIT = 255;
     const PASSWORD_CHAR_LIMIT = 255;
+
+    // Fetch roles when component mounts
+    useEffect(() => {
+        const fetchRoles = async () => {
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                setError("No authentication token found. Please log in.");
+                return;
+            }
+
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/roles/`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setRoles(response.data.data);
+                // Set default role if roles are available
+                if (response.data.data.length > 0) {
+                    setFormData(prev => ({ ...prev, role: response.data.data[0]._id }));
+                }
+            } catch (err) {
+                setError("Failed to fetch roles");
+            }
+        };
+
+        fetchRoles();
+    }, []);
+
     const validateForm = (): boolean => {
         const newErrors: ValidationErrors = {};
         let isValid = true;
@@ -46,6 +83,11 @@ const AddUser: React.FC = () => {
             isValid = false;
         }
 
+        if (!formData.role) {
+            newErrors.role = 'Please select a role';
+            isValid = false;
+        }
+
         setErrors(newErrors);
         return isValid;
     };
@@ -56,7 +98,6 @@ const AddUser: React.FC = () => {
             ...formData,
             [name]: value,
         });
-        // Clear error for the field being edited
         if (errors[name as keyof ValidationErrors]) {
             setErrors({
                 ...errors,
@@ -65,20 +106,19 @@ const AddUser: React.FC = () => {
         }
 
         if (name === "name" && value.length >= NAME_CHAR_LIMIT) {
-            setErrors((prev) => ({ ...prev, name: `Name must be ${NAME_CHAR_LIMIT} characters or less` }))
+            setErrors((prev) => ({ ...prev, name: `Name must be ${NAME_CHAR_LIMIT} characters or less` }));
         } else if (name === "email" && value.length >= EMAIL_CHAR_LIMIT) {
-            setErrors((prev) => ({ ...prev, email: `Email must be ${EMAIL_CHAR_LIMIT} characters or less` }))
+            setErrors((prev) => ({ ...prev, email: `Email must be ${EMAIL_CHAR_LIMIT} characters or less` }));
         } else if ((name === "password" || name === "password_confirmation") && value.length >= PASSWORD_CHAR_LIMIT) {
-            setErrors((prev) => ({ ...prev, [name]: `Password must be ${PASSWORD_CHAR_LIMIT} characters or less` }))
+            setErrors((prev) => ({ ...prev, [name]: `Password must be ${PASSWORD_CHAR_LIMIT} characters or less` }));
         } else {
-            // Clear error for the field being edited if it's within the limit
-            setErrors((prev) => ({ ...prev, [name]: undefined }))
+            setErrors((prev) => ({ ...prev, [name]: undefined }));
         }
     };
+
     const handleFocus = () => {
-        // Clear all errors when focusing on a new input
-        setErrors({})
-    }
+        setErrors({});
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,16 +128,16 @@ const AddUser: React.FC = () => {
             return;
         }
 
-        const token = localStorage.getItem("authToken")
+        const token = localStorage.getItem("authToken");
         if (!token) {
-            setError("No authentication token found. Please log in.")
-            return
+            setError("No authentication token found. Please log in.");
+            return;
         }
 
         setIsSubmitting(true);
 
         try {
-            await axios.post(`${import.meta.env.VITE_SERVER_ADMIN_API}/user`, formData, {
+            await axios.post(`${import.meta.env.VITE_SERVER_API}/api/v1/user`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -108,8 +148,8 @@ const AddUser: React.FC = () => {
                 email: '',
                 password: '',
                 password_confirmation: '',
-                role: 0,
-                gender: '', // Reset gender field
+                role: roles.length > 0 ? roles[0]._id : '',
+                gender: '',
             });
             setErrors({});
         } catch (error: any) {
@@ -136,7 +176,7 @@ const AddUser: React.FC = () => {
     const errorClasses = "mt-1 text-sm text-red-600";
 
     if (error) {
-        return <div className="text-center py-6 text-red-500">{error}</div>
+        return <div className="text-center py-6 text-red-500">{error}</div>;
     }
 
     return (
@@ -149,6 +189,8 @@ const AddUser: React.FC = () => {
                 <div className="px-4 py-5 sm:p-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 gap-6">
+                            {/* ... Other form fields remain the same ... */}
+
                             <div>
                                 <label htmlFor="name" className={labelClasses}>Name</label>
                                 <input
@@ -241,6 +283,7 @@ const AddUser: React.FC = () => {
                                 )}
                             </div>
 
+                            {/* Dynamic Role Dropdown */}
                             <div>
                                 <label htmlFor="role" className={labelClasses}>Role</label>
                                 <select
@@ -251,8 +294,11 @@ const AddUser: React.FC = () => {
                                     className={inputClasses(errors.role)}
                                     onFocus={handleFocus}
                                 >
-                                    <option value={0}>User</option>
-                                    <option value={1}>Admin</option>
+                                    {roles.map((role) => (
+                                        <option key={role._id} value={role.name}>
+                                            {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
+                                        </option>
+                                    ))}
                                 </select>
                                 {errors.role && <p className={errorClasses}>{errors.role}</p>}
                             </div>
@@ -261,8 +307,8 @@ const AddUser: React.FC = () => {
                         <div className="flex justify-end mt-6">
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
-                                className={`px-4 py-2 border border-transparent rounded-sm shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+                                disabled={isSubmitting || roles.length === 0}
+                                className={`px-4 py-2 border border-transparent rounded-sm shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 ${isSubmitting || roles.length === 0 ? 'opacity-75 cursor-not-allowed' : ''
                                     }`}
                             >
                                 {isSubmitting ? (

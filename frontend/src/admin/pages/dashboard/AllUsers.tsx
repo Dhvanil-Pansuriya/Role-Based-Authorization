@@ -91,7 +91,7 @@ const AllUsers: React.FC = () => {
     setIsEditModalOpen(false)
     setUserToEdit(null)
   }
-  
+
   const handleUpdate = async (updatedUser: Partial<User & { role: string }>) => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -107,8 +107,6 @@ const AllUsers: React.FC = () => {
         gender: updatedUser.gender,
         role: updatedUser.role // This will be the role name (e.g., "staff")
       };
-
-      console.log("Sending data to update user:", dataToSend);
 
       const response = await axios.put(
         `${import.meta.env.VITE_SERVER_API}/api/v1/user/${userToEdit?._id}`,
@@ -214,7 +212,7 @@ const AllUsers: React.FC = () => {
     }
 
     axios
-      .delete(`${import.meta.env.VITE_SERVER_API}/api/v1/delete-user/${id}`, {
+      .delete(`${import.meta.env.VITE_SERVER_API}/api/v1/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -463,7 +461,7 @@ const AllUsers: React.FC = () => {
                       <Eye size={20} className="inline-block" />
                     </button>
                     <button
-                      className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "Admin" ? "cursor-not-allowed opacity-50" : ""
+                      className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "admin" ? "cursor-not-allowed opacity-50" : ""
                         }`}
                       onClick={() => user.role.name !== "Admin" && openDeleteModal(user._id)}
                       disabled={user.role.name === "Admin"}

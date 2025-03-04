@@ -147,7 +147,8 @@ const AllAdmins: React.FC = () => {
     setIsViewModalOpen(false)
     setUserToView(null)
   }
-  const handleUpdate = async (updatedUser: Partial<User>) => {
+
+  const handleUpdate = async (updatedUser: Partial<User & { role: string }>) => {
     const token = localStorage.getItem("authToken");
     if (!token) {
       setError("No authentication token found. Please log in.");
@@ -155,22 +156,42 @@ const AllAdmins: React.FC = () => {
     }
 
     try {
-      const response = await axios.put(`${import.meta.env.VITE_SERVER_ADMIN_API}/user/${userToEdit?._id}`, updatedUser, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Send the role name as a string
+      const dataToSend = {
+        name: updatedUser.name,
+        email: updatedUser.email,
+        gender: updatedUser.gender,
+        role: updatedUser.role // This will be the role name (e.g., "staff")
+      };
+
+      const response = await axios.put(
+        `${import.meta.env.VITE_SERVER_API}/api/v1/user/${userToEdit?._id}`,
+        dataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.data.success) {
         setAdmins((prevUsers) =>
-          prevUsers.map((user) => (user._id === userToEdit?._id ? { ...user, ...response.data.data.user } : user)),
+          prevUsers.map((user) =>
+            user._id === userToEdit?._id
+              ? {
+                ...user,
+                name: updatedUser.name || user.name,
+                email: updatedUser.email || user.email,
+                gender: updatedUser.gender || user.gender,
+                role: {
+                  ...user.role,
+                  name: updatedUser.role || user.role.name
+                },
+                updatedAt: new Date().toISOString()
+              }
+              : user
+          )
         );
-
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-
-        if (currentUser?._id === userToEdit?._id) {
-          dispatch(updateUser({ name: updatedUser.name, email: updatedUser.email, gender: updatedUser.gender }));
-        }
 
         toast.success(`User ${updatedUser.name} updated successfully!`, {
           style: {
@@ -187,13 +208,48 @@ const AllAdmins: React.FC = () => {
             secondary: 'white',
           },
         });
+
         closeEditModal();
       }
     } catch (error) {
       console.error("Error updating user:", error);
-      setError("Failed to update user. Please check your permissions and try again.");
+
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data.message, {
+          style: {
+            border: '1px solid gray',
+            padding: '16px',
+            color: 'gray',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            maxWidth: '400px'
+          },
+          iconTheme: {
+            primary: 'red',
+            secondary: 'white',
+          },
+        });
+      } else {
+        toast.error("An unexpected error occurred.", {
+          style: {
+            border: '1px solid gray',
+            padding: '16px',
+            color: 'gray',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            maxWidth: '400px'
+          },
+          iconTheme: {
+            primary: 'red',
+            secondary: 'white',
+          },
+        });
+      }
     }
-  };
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center">
@@ -315,7 +371,7 @@ const AllAdmins: React.FC = () => {
                       {user?.role.name === "admin" && "Admin"}
                       {user?.role.name === "staff" && "Staff"}
                       {user?.role.name === "user" && "User"}
-                    </div> 
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">

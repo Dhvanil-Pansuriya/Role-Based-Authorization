@@ -12,15 +12,18 @@ const SettingsPage: React.FC = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user.userData);
   const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
   const [gender, setGender] = useState(user?.gender || "");
-  const [role, setRole] = useState(user?.role || 1);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({
     name: '',
   });
 
-  const hasChanges = name !== user?.name || email !== user?.email || role !== user?.role || gender !== user?.gender;
+  const hasChanges = name !== user?.name || gender !== user?.gender;
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleString();
+  };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -35,7 +38,6 @@ const SettingsPage: React.FC = () => {
 
     setName(value);
 
-    // Clear error when value is within limit
     if (errors.name) {
       setErrors(prev => ({
         ...prev,
@@ -46,7 +48,6 @@ const SettingsPage: React.FC = () => {
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name } = e.target;
-    // Clear errors when focusing on a different field
     if (name !== 'name') {
       setErrors({ name: '' });
     }
@@ -55,7 +56,6 @@ const SettingsPage: React.FC = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate before submission
     if (name.length > CHAR_LIMIT) {
       setErrors({ name: `Name must be less than ${CHAR_LIMIT} characters` });
       return;
@@ -66,8 +66,8 @@ const SettingsPage: React.FC = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_ADMIN_API}/user/${user?._id}`,
-        { name, email, gender, role },
+        `${import.meta.env.VITE_SERVER_API}/user/${user?._id}`,
+        { name, gender },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ const SettingsPage: React.FC = () => {
             secondary: 'white',
           },
         });
-        dispatch(updateUser({ name, email, gender, role }));
+        dispatch(updateUser({ name, gender }));
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || "An error occurred while updating the user.";
@@ -142,22 +142,45 @@ const SettingsPage: React.FC = () => {
           <h2 className="text-lg font-medium text-gray-900">Account Settings</h2>
           <div className="mt-6 space-y-6">
             <form onSubmit={handleUpdate}>
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 my-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  className={`mt-1 block w-full rounded-sm py-2 px-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.name ? 'focus:border-red-500 focus:ring-red-500' : ''}`}
-                  value={name}
-                  onChange={handleNameChange}
-                  onFocus={handleFocus}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                )}
+              <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8">
+                {/* Editable Fields */}
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 my-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    className={`mt-1 block w-full rounded-sm py-2 px-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.name ? 'focus:border-red-500 focus:ring-red-500' : ''}`}
+                    value={name}
+                    onChange={handleNameChange}
+                    onFocus={handleFocus}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 my-2">
+                    Gender
+                  </label>
+                  <select
+                    name="gender"
+                    id="gender"
+                    className="mt-1 block w-full rounded-sm py-2 px-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    onFocus={handleFocus}
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                {/* Read-only Fields */}
                 <div className="opacity-70 cursor-not-allowed">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 my-2">
                     Email
@@ -167,46 +190,76 @@ const SettingsPage: React.FC = () => {
                     name="email"
                     id="email"
                     className="mt-1 block w-full rounded-sm py-2 px-2 border-gray-300 shadow-sm sm:text-sm"
-                    value={email}
+                    value={user?.email || ''}
                     disabled
-                    onFocus={handleFocus}
                   />
                 </div>
-                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 my-2">
-                  Gender
-                </label>
-                <select
-                  name="gender"
-                  id="gender"
-                  className="mt-1 block w-full rounded-sm py-2 px-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  onFocus={handleFocus}
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 my-2">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  className="mt-1 block w-full rounded-sm py-2 px-2 border-gray-300 shadow-sm sm:text-sm"
-                  value={role}
-                  onChange={(e) => setRole(parseInt(e.target.value))}
-                  disabled
-                  onFocus={handleFocus}
-                >
-                  <option value={1}>Admin</option>
-                  <option value={2}>User</option>
-                </select>
+
+                <div className="opacity-70 cursor-not-allowed">
+                  <label htmlFor="role" className="block text-sm font-medium text-gray-700 my-2">
+                    Role
+                  </label>
+                  <input
+                    type="text"
+                    name="role"
+                    id="role"
+                    className="mt-1 block w-full rounded-sm py-2 px-2 border-gray-300 shadow-sm sm:text-sm"
+                    value={user?.role.name || ''}
+                    disabled
+                  />
+                </div>
+
+                <div className="opacity-70 cursor-not-allowed">
+                  <label htmlFor="createdAt" className="block text-sm font-medium text-gray-700 my-2">
+                    Created At
+                  </label>
+                  <input
+                    type="text"
+                    name="createdAt"
+                    id="createdAt"
+                    className="mt-1 block w-full rounded-sm py-2 px-2 border-gray-300 shadow-sm sm:text-sm"
+                    value={formatDate(user?.createdAt)}
+                    disabled
+                  />
+                </div>
+
+                <div className="opacity-70 cursor-not-allowed">
+                  <label htmlFor="updatedAt" className="block text-sm font-medium text-gray-700 my-2">
+                    Updated At
+                  </label>
+                  <input
+                    type="text"
+                    name="updatedAt"
+                    id="updatedAt"
+                    className="mt-1 block w-full rounded-sm py-2 px-2 border-gray-300 shadow-sm sm:text-sm"
+                    value={formatDate(user?.updatedAt)}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              {/* Permissions Display */}
+              <div className="mt-6">
+                <h3 className="text-sm font-medium text-gray-700 my-2">Permissions</h3>
+                <div className="mt-2 border border-gray-200 rounded-sm p-4">
+                  {user?.role.permissions?.length ? (
+                    <ul className="list-disc pl-5 space-y-2">
+                      {user.role.permissions.map((permission) => (
+                        <li key={permission._id} className="text-sm text-gray-600">
+                          <span className="font-medium">{permission.name}</span>
+                          {permission.description && `: ${permission.description}`}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500">No permissions assigned</p>
+                  )}
+                </div>
               </div>
 
               <button
                 type="submit"
-                className={`inline-flex items-center mt-3 px-4 py-2 border text-sm font-medium rounded-sm shadow-sm text-white ${hasChanges && !errors.name ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                className={`inline-flex items-center mt-6 px-4 py-2 border text-sm font-medium rounded-sm shadow-sm text-white ${hasChanges && !errors.name ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-400 cursor-not-allowed'}`}
                 disabled={isLoading || !hasChanges || Boolean(errors.name)}
               >
                 {isLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Check className="mr-2 h-4 w-4" />} Save Changes
@@ -215,10 +268,7 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
-      <Toaster
-        position="bottom-right"
-        reverseOrder={false}
-      />
+      <Toaster position="bottom-right" reverseOrder={false} />
     </div>
   );
 };

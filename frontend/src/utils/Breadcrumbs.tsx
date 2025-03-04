@@ -16,7 +16,9 @@ const routeNames: { [key: string]: string } = {
     'adduser': 'Add User',
     'profile': 'Profile',
     'users': 'Users',
-    'addrole' : "Add Role"
+    'addrole': "Add Role",
+    'addpermissions': 'Add Permissions',
+    'editrole': 'Edit Role'
 };
 
 const Breadcrumbs: React.FC = () => {
@@ -28,7 +30,7 @@ const Breadcrumbs: React.FC = () => {
             {pathnames.map((name, index) => {
                 const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
                 const isLast = index === pathnames.length - 1;
-                const displayName = routeNames[name] || name; 
+                const displayName = routeNames[name] || name;
 
                 return (
                     <React.Fragment key={name}>

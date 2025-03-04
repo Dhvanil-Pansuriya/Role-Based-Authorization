@@ -17,6 +17,8 @@ import AllRoles from './admin/pages/dashboard/AllRoles';
 import AllPermissions from './admin/pages/dashboard/AllPermissions';
 import Users from './admin/pages/dashboard/Users';
 import AddRole from './admin/pages/dashboard/AddRole';
+import AddPermission from './admin/pages/dashboard/AddPermission';
+import EditRole from './admin/utils/EditRolePage';
 
 const App: React.FC = () => {
   return (
@@ -34,14 +36,16 @@ const App: React.FC = () => {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="users" element={<Users />} />
+            <Route path="adduser" element={<AddUser />} />
             <Route path="users/allusers" element={<AllUsers />} />
             <Route path="users/alladmins" element={<AllAdmins />} />
             <Route path="users/allstaff" element={<AllStaff />} />
             <Route path="allroles" element={<AllRoles />} />
+            <Route path="allroles/editrole/:id" element={<EditRole />} />
             <Route path="allroles/addrole" element={<AddRole />} />
             <Route path="allpermissions" element={<AllPermissions />} />
+            <Route path="allpermissions/addpermissions" element={<AddPermission />} />
             <Route path="alladminsusers" element={<AllAdminsAndUsers />} />
-            <Route path="adduser" element={<AddUser />} />
           </Route>
         </Route>
 

@@ -5,7 +5,6 @@ import type React from "react"
 import { useEffect, useState, useMemo } from "react"
 import axios from "axios"
 import ConfirmationModal from "../../utils/ConfirmationModal"
-import EditRoleModal from "../../utils/EditRoleModal"
 import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
@@ -42,13 +41,8 @@ const AllRoles: React.FC = () => {
   const [rolesPerPage] = useState(10)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [roleToEdit, setRoleToEdit] = useState<Role | null>(null)
-  const [roleToView, setRoleToView] = useState<Role | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
-  const [allPermissions, setAllPermissions] = useState<Permission[]>([])
-  const [selectedPermissions, setSelectedPermissions] = useState<{ [roleId: string]: string[] }>({}) //
-  const [hasChanges, setHasChanges] = useState<{ [roleId: string]: boolean }>({});
+  const [roleToView, setRoleToView] = useState<Role | null>(null)
   const navigate = useNavigate()
 
   const fetchRoles = async () => {
@@ -69,11 +63,6 @@ const AllRoles: React.FC = () => {
 
       if (response.data.success) {
         setRoles(response.data.data);
-        const initialSelectedPermissions: { [roleId: string]: string[] } = {};
-        response.data.data.forEach((role: Role) => {
-          initialSelectedPermissions[role._id] = role.permissions.map(p => p.name); // Using names instead of IDs
-        });
-        setSelectedPermissions(initialSelectedPermissions);
       } else {
         setError("Failed to fetch roles: Invalid response format");
       }
@@ -85,141 +74,9 @@ const AllRoles: React.FC = () => {
     }
   };
 
-  const fetchPermissions = async () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setError("No authentication token found. Please log in.");
-      return;
-    }
-
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-permissions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.success) {
-        setAllPermissions(response.data.data.permissions);
-      } else {
-        setError("Failed to fetch permissions: Invalid response format");
-      }
-    } catch (error) {
-      console.error("Error fetching permissions:", error);
-      setError("Failed to fetch permissions. Please check your permissions and try again.");
-    }
-  };
-
   useEffect(() => {
     fetchRoles();
-    fetchPermissions();
   }, []);
-
-  const openEditModal = (role: Role) => {
-    setRoleToEdit(role);
-    setIsEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setRoleToEdit(null);
-  };
-
-  const handleUpdate = async (updatedRole: Partial<Role>) => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("No authentication token found. Please log in.");
-      return;
-    }
-
-    try {
-      // Use permission names instead of IDs
-      const permissionNames = updatedRole.permissions?.map(perm =>
-        typeof perm === 'string' ? perm : perm.name
-      );
-
-      const roleToUpdate = {
-        ...updatedRole,
-        permissions: permissionNames
-      };
-
-      const response = await axios.put(`${import.meta.env.VITE_SERVER_API}/api/v1/roles/${roleToEdit?._id}`, roleToUpdate, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.success) {
-        setRoles((prevRoles) =>
-          prevRoles.map((role) =>
-            role._id === roleToEdit?._id
-              ? { ...role, ...updatedRole, permissions: response.data.data.permissions }
-              : role
-          )
-        );
-
-        if (roleToEdit && permissionNames) {
-          setSelectedPermissions((prev) => ({
-            ...prev,
-            [roleToEdit._id]: permissionNames
-          }));
-        }
-
-        toast.success(`Role ${updatedRole.name} updated successfully!`, {
-          style: {
-            border: '1px solid gray',
-            padding: '16px',
-            color: 'gray',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            maxWidth: '400px'
-          },
-          iconTheme: {
-            primary: 'green',
-            secondary: 'white',
-          },
-        });
-        closeEditModal();
-      }
-    } catch (error) {
-      console.error("Error updating role:", error);
-      if (axios.isAxiosError(error) && error.response) {
-        toast.error(error.response.data.message, {
-          style: {
-            border: '1px solid gray',
-            padding: '16px',
-            color: 'gray',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            maxWidth: '400px'
-          },
-          iconTheme: {
-            primary: 'red',
-            secondary: 'white',
-          },
-        });
-      } else {
-        toast.error("An unexpected error occurred.", {
-          style: {
-            border: '1px solid gray',
-            padding: '16px',
-            color: 'gray',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            maxWidth: '400px'
-          },
-          iconTheme: {
-            primary: 'red',
-            secondary: 'white',
-          },
-        });
-      }
-    }
-  };
 
   const openDeleteModal = (id: string) => {
     setRoleToDelete(id);
@@ -260,11 +117,6 @@ const AllRoles: React.FC = () => {
           });
           setIsDeleteModalOpen(false);
           setRoles((prevRoles) => prevRoles.filter((role) => role._id !== id));
-          setSelectedPermissions((prev) => {
-            const updated = { ...prev };
-            delete updated[id];
-            return updated;
-          });
         }
       })
       .catch((error) => {
@@ -356,103 +208,6 @@ const AllRoles: React.FC = () => {
     setRoleToView(null);
   };
 
-  const handlePermissionChange = (roleId: string, permissionName: string, isChecked: boolean) => {
-    setSelectedPermissions((prev) => {
-      const updatedPermissions = isChecked
-        ? [...(prev[roleId] || []), permissionName]
-        : (prev[roleId] || []).filter((name) => name !== permissionName);
-
-      // Check if the permissions have changed
-      const originalPermissions = roles.find(role => role._id === roleId)?.permissions.map(p => p.name) || [];
-      const hasChanges = updatedPermissions.sort().join(',') !== originalPermissions.sort().join(',');
-
-      setHasChanges((prevChanges) => ({
-        ...prevChanges,
-        [roleId]: hasChanges,
-      }));
-
-      return {
-        ...prev,
-        [roleId]: updatedPermissions,
-      };
-    });
-  };
-
-  const handleSavePermissions = async (roleId: string) => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("No authentication token found. Please log in.");
-      return;
-    }
-
-    try {
-      const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/api/v1/roles/${roleId}`,
-        { permissions: selectedPermissions[roleId] },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        setRoles((prevRoles) =>
-          prevRoles.map((role) =>
-            role._id === roleId
-              ? { ...role, permissions: response.data.data.permissions }
-              : role
-          )
-        );
-
-        fetchRoles()
-        
-        setHasChanges((prevChanges) => ({
-          ...prevChanges,
-          [roleId]: false, // Reset changes after saving
-        }));
-        toast.success(`Permissions for ${response.data.data.name} updated successfully!`, {
-          style: {
-            border: "1px solid gray",
-            padding: "16px",
-            color: "gray",
-          },
-          iconTheme: {
-            primary: "green",
-            secondary: "white",
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Error updating role permissions:", error);
-      if (axios.isAxiosError(error) && error.response) {
-        toast.error(`Failed to update permissions: ${error.response.data.message}`, {
-          style: {
-            border: "1px solid gray",
-            padding: "16px",
-            color: "gray",
-          },
-          iconTheme: {
-            primary: "red",
-            secondary: "white",
-          },
-        });
-      } else {
-        toast.error("Failed to update permissions. Please try again.", {
-          style: {
-            border: "1px solid gray",
-            padding: "16px",
-            color: "gray",
-          },
-          iconTheme: {
-            primary: "red",
-            secondary: "white",
-          },
-        });
-      }
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center">
@@ -495,7 +250,7 @@ const AllRoles: React.FC = () => {
                   { label: "Index", key: null },
                   { label: "Name", key: "name" },
                   { label: "Description", key: "description" },
-                  { label: `Permissions Count (${allPermissions.length})`, key: null },
+                  { label: "Permissions Count", key: null },
                   { label: "Created", key: "createdAt" },
                   { label: "Updated", key: "updatedAt" },
                   { label: "Actions", key: null },
@@ -579,7 +334,10 @@ const AllRoles: React.FC = () => {
                     >
                       <Trash2 size={20} className="inline-block" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(role)}>
+                    <button 
+                      className="text-gray-600 hover:text-gray-800 mx-1"
+                      onClick={() => navigate(`/dashboard/allroles/editrole/${role._id}`)}
+                    >
                       <Edit size={20} className="inline-block" />
                     </button>
                   </td>
@@ -602,8 +360,7 @@ const AllRoles: React.FC = () => {
               <button
                 onClick={goToPreviousPage}
                 disabled={currentPage === 1}
-                className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
+                className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50"}`}
               >
                 <ChevronLeft size={16} />
               </button>
@@ -619,8 +376,7 @@ const AllRoles: React.FC = () => {
                       <button
                         key={page}
                         onClick={() => paginate(page)}
-                        className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === page ? "z-10 bg-gray-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"
-                          }`}
+                        className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === page ? "z-10 bg-gray-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
                       >
                         {page}
                       </button>,
@@ -630,8 +386,7 @@ const AllRoles: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => paginate(page)}
-                      className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === page ? "z-10 bg-gray-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"
-                        }`}
+                      className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === page ? "z-10 bg-gray-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
                     >
                       {page}
                     </button>
@@ -640,8 +395,7 @@ const AllRoles: React.FC = () => {
               <button
                 onClick={goToNextPage}
                 disabled={currentPage === totalPages}
-                className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
+                className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50"}`}
               >
                 <ChevronRight size={16} />
               </button>
@@ -686,79 +440,12 @@ const AllRoles: React.FC = () => {
           title="Confirm Deletion"
           message="Are you sure you want to delete this role? This action cannot be undone."
         />
-        <EditRoleModal
-          isOpen={isEditModalOpen}
-          onClose={closeEditModal}
-          onSave={handleUpdate}
-          role={roleToEdit}
-          permissions={allPermissions}
-        />
         <ViewRoleModal
           isOpen={isViewModalOpen}
           onClose={closeViewModal}
           role={roleToView}
         />
       </div>
-
-      <h2 className="text-2xl font-semibold text-gray-900 mb-4">Manage Permissions</h2>
-      <div className="bg-white shadow rounded-sm overflow-hidden mt-6">
-        <div className="p-6">
-          {roles.map((role) => (
-            <div key={role._id} className={`mb-6 border p-4`}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-medium text-gray-900 flex">
-                  {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
-                  {hasChanges[role._id] && <span className="text-red-500 ml-2">*</span>}
-                </h3>
-                <button
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  onClick={() => {
-                    if (!hasChanges[role._id]) {
-                      toast.success("No changes in permissions.", {
-                        icon: "ℹ️",
-                        style: {
-                          border: '1px solid gray',
-                          padding: '16px',
-                          color: 'gray',
-                        },
-                        iconTheme: {
-                          primary: 'blue',
-                          secondary: 'white',
-                        },
-                      });
-                    } else {
-                      handleSavePermissions(role._id);
-                    }
-                  }}
-                >
-                  Save Permissions
-                </button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
-                {allPermissions.map((permission) => (
-                  <div key={permission._id} className="flex items-center pb-1">
-                    <input
-                      type="checkbox"
-                      id={`permission-${role._id}-${permission.name}`}
-                      checked={selectedPermissions[role._id]?.includes(permission.name) || false}
-                      onChange={(e) => handlePermissionChange(role._id, permission.name, e.target.checked)}
-                      className="h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
-                    />
-                    <label
-                      htmlFor={`permission-${role._id}-${permission.name}`}
-                      className="ml-2 text-sm text-gray-700"
-                      title={permission.description}
-                    >
-                      {permission.name.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase())}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <Toaster position="bottom-right" reverseOrder={false} />
     </div>
   );

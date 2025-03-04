@@ -213,7 +213,7 @@ const Users: React.FC = () => {
     }
 
     axios
-      .delete(`${import.meta.env.VITE_SERVER_API}/api/v1/delete-user/${id}`, {
+      .delete(`${import.meta.env.VITE_SERVER_API}/api/v1/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -462,10 +462,10 @@ const Users: React.FC = () => {
                       <Eye size={20} className="inline-block" />
                     </button>
                     <button
-                      className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "Admin" ? "cursor-not-allowed opacity-50" : ""
-                        }`}
-                      onClick={() => user.role.name !== "Admin" && openDeleteModal(user._id)}
-                      disabled={user.role.name === "Admin"}
+                      className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "admin" || user.role.name === "staff" ? "cursor-not-allowed opacity-50" : ""
+                      }`}
+                      onClick={() => user.role.name !== "admin" && user.role.name !== "staff" && openDeleteModal(user._id)}
+                      disabled={user.role.name === "admin" || user.role.name === "staff"}
                     >
                       <Trash2 size={20} className="inline-block" />
                     </button>
