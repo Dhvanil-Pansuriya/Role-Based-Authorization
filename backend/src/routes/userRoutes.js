@@ -18,6 +18,7 @@ const router = express.Router();
 router.get("/admin", verifyToken, authorizeRole("admin"), (req, res) => {
   successResponse(res, "Admin Approved", req.user);
 });
+
 router.get(
   "/staff",
   verifyToken,
@@ -26,6 +27,16 @@ router.get(
     successResponse(res, "Staff Approved", req.user);
   }
 );
+
+router.get(
+  "/manager",
+  verifyToken,
+  authorizeRole("admin", "manager"),
+  (req, res) => {
+    successResponse(res, "Manager Approved", req.user);
+  }
+);
+
 router.get(
   "/user",
   verifyToken,

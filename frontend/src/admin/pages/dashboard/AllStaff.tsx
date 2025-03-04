@@ -72,9 +72,11 @@ const AllStaff: React.FC = () => {
         }
       })
       .catch((error) => {
-        console.error("Error fetching staff:", error);
-        setError("Failed to fetch staff. Please check your permissions and try again.");
-      })
+        if (axios.isAxiosError(error) && error.response) {
+          setError(error.response.data.message);
+        } else {
+          setError("An unexpected error occurred");
+        }      })
       .finally(() => {
         setLoading(false);
       });
@@ -163,8 +165,6 @@ const AllStaff: React.FC = () => {
         gender: updatedUser.gender,
         role: updatedUser.role // This will be the role name (e.g., "staff")
       };
-
-      console.log("Sending data to update user:", dataToSend);
 
       const response = await axios.put(
         `${import.meta.env.VITE_SERVER_API}/api/v1/user/${userToEdit?._id}`,

@@ -67,8 +67,11 @@ const AllRoles: React.FC = () => {
         setError("Failed to fetch roles: Invalid response format");
       }
     } catch (error) {
-      console.error("Error fetching roles:", error);
-      setError("Failed to fetch roles. Please check your permissions and try again.");
+      if (axios.isAxiosError(error) && error.response) {
+        setError(error.response.data.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }
@@ -328,13 +331,13 @@ const AllRoles: React.FC = () => {
                       <Eye size={20} className="inline-block" />
                     </button>
                     <button
-                      className={`text-gray-600 hover:text-gray-800 mx-1 ${role.name === "admin" ? "cursor-not-allowed opacity-50" : ""}`}
+                      className={`text-gray-600 hover:text-gray-800 mx-1 ${role.name === "admin" || role.name === "staff" || role.name === "user" ? "cursor-not-allowed opacity-50" : ""}`}
                       onClick={() => role.name !== "admin" && openDeleteModal(role._id)}
                       disabled={role.name === "admin"}
                     >
                       <Trash2 size={20} className="inline-block" />
                     </button>
-                    <button 
+                    <button
                       className="text-gray-600 hover:text-gray-800 mx-1"
                       onClick={() => navigate(`/dashboard/allroles/editrole/${role._id}`)}
                     >

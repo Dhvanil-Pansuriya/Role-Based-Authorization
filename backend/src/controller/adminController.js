@@ -106,20 +106,24 @@ const getAllAdmins = async (req, res) => {
 };
 
 const getAllRoles = async (req, res) => {
+  console.log("Starting getAllRoles");
   try {
     const roles = await Role.find();
-    successResponse(res, { roles });
+    console.log("Sending success response");
+    res.json({ success: true, data: roles });
   } catch (error) {
-    errorResponse(res, "Error retrieving roles", 500);
+    console.log("Sending error response");
+    errorResponse(res, error.message);
   }
+  console.log("Function end"); 
 };
 
 const getAllPermissions = async (req, res) => {
   try {
     const permissions = await Permission.find();
-    successResponse(res, { permissions });
-  } catch (error) {
-    errorResponse(res, "Error retrieving permissions", 500);
+    successResponse(res, permissions, "Permissions fetched successfully");
+  } catch (err) {
+    errorResponse(res, `Error: ${err.message}`, 500);
   }
 };
 

@@ -65,23 +65,15 @@ const Navbar: React.FC<LayoutProps> = ({ children }) => {
                     </Link>
                 </div>
                 <div className="relative">
-                    {isDashboardRoute ? (
-                        <button
-                            ref={buttonRef}
-                            className="flex items-center justify-center mr-1 w-10 h-10 text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-sm transition-colors"
-                            onClick={handleProfileClick}
-                        >
-                            <User2 className="w-5 h-5" />
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                        >
-                            <LogOut className="w-5 h-5 mr-3" />
-                            Logout
-                        </button>
-                    )}
+
+                    <button
+                        ref={buttonRef}
+                        className="flex items-center justify-center mr-1 w-10 h-10 text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-sm transition-colors"
+                        onClick={handleProfileClick}
+                    >
+                        <User2 className="w-5 h-5" />
+                    </button>
+
                     <AnimatePresence>
                         {isPopupOpen && (
                             <motion.div

@@ -94,8 +94,6 @@ const SettingsPage: React.FC = () => {
         dispatch(updateUser({ name, gender }));
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "An error occurred while updating the user.";
-      console.log(errorMessage);
       if (axios.isAxiosError(err) && err.response) {
         toast.error(err.response.data.message, {
           style: {

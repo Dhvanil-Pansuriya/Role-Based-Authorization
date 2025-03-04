@@ -73,8 +73,11 @@ const AllAdmins: React.FC = () => {
         }
       })
       .catch((error) => {
-        console.error("Error fetching admins:", error);
-        setError("Failed to fetch admins. Please check your permissions and try again.");
+        if (axios.isAxiosError(error) && error.response) {
+          setError(error.response.data.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -157,7 +160,7 @@ const AllAdmins: React.FC = () => {
     }
 
     try {
-     
+
       const dataToSend = {
         name: updatedUser.name,
         email: updatedUser.email,
@@ -178,10 +181,10 @@ const AllAdmins: React.FC = () => {
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
       if (currentUser?._id === userToEdit?._id) {
-        dispatch(updateUser({ 
-          name: updatedUser.name, 
-          email: updatedUser.email, 
-          gender: updatedUser.gender 
+        dispatch(updateUser({
+          name: updatedUser.name,
+          email: updatedUser.email,
+          gender: updatedUser.gender
         }));
       }
 

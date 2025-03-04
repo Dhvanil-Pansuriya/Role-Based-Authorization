@@ -22,10 +22,14 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", roleRoutes);
 app.use("/api/v1", permissionRoutes);
-app.use("/api/v1", adminRoutes)
+app.use("/api/v1", adminRoutes);
 
 app.listen(PORT, () => {
-  console.log("---------------------------------------------------------------");
+  console.log(
+    "---------------------------------------------------------------"
+  );
   console.log(`| - Server running on port : http://localhost:${PORT}`);
-  console.log("---------------------------------------------------------------");
+  console.log(
+    "---------------------------------------------------------------"
+  );
 });

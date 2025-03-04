@@ -29,7 +29,7 @@ const AllPermissions: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [permissionsPerPage] = useState(10)
+  const [permissionsPerPage] = useState(20)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [permissionToDelete, setPermissionToDelete] = useState<string | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -38,7 +38,7 @@ const AllPermissions: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const navigate = useNavigate()
 
-  useEffect(() => {
+  const fetchPermission = async () => {
     const token = localStorage.getItem("authToken");
 
     if (!token) {
@@ -48,25 +48,32 @@ const AllPermissions: React.FC = () => {
     }
 
     axios
-      .get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-permissions`, {
+      .get(`${import.meta.env.VITE_SERVER_API}/api/v1/permissions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         if (response.data.success) {
-          setPermissions(response.data.data.permissions);
+          setPermissions(response.data.data);
         } else {
           setError("Failed to fetch permissions: Invalid response format");
         }
       })
       .catch((error) => {
-        console.error("Error fetching permissions:", error);
-        setError("Failed to fetch permissions. Please check your permissions and try again.");
+        if (axios.isAxiosError(error) && error.response) {
+          setError(error.response.data.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
       })
       .finally(() => {
         setLoading(false);
       });
+  }
+
+  useEffect(() => {
+    fetchPermission()
   }, []);
 
   const openEditModal = (permission: Permission) => {
@@ -79,6 +86,7 @@ const AllPermissions: React.FC = () => {
     setPermissionToEdit(null)
   }
 
+ 
   const handleUpdate = async (updatedPermission: Partial<Permission>) => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -120,6 +128,7 @@ const AllPermissions: React.FC = () => {
             secondary: "white",
           },
         });
+        fetchPermission()
         closeEditModal();
       }
     } catch (error) {
@@ -159,6 +168,7 @@ const AllPermissions: React.FC = () => {
       }
     }
   };
+
 
   const openDeleteModal = (id: string) => {
     setPermissionToDelete(id)

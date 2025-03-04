@@ -11,7 +11,6 @@ import ProtectedRoute from './utils/ProtectedRoute';
 import Home from './user/Home';
 import AddUser from './admin/pages/dashboard/AddUser';
 import AllAdmins from './admin/pages/dashboard/AllAdmins';
-import AllAdminsAndUsers from './admin/pages/dashboard/AllAdminsAndUsers';
 import AllStaff from './admin/pages/dashboard/AllStaff';
 import AllRoles from './admin/pages/dashboard/AllRoles';
 import AllPermissions from './admin/pages/dashboard/AllPermissions';
@@ -45,7 +44,6 @@ const App: React.FC = () => {
             <Route path="allroles/addrole" element={<AddRole />} />
             <Route path="allpermissions" element={<AllPermissions />} />
             <Route path="allpermissions/addpermissions" element={<AddPermission />} />
-            <Route path="alladminsusers" element={<AllAdminsAndUsers />} />
           </Route>
         </Route>
 

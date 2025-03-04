@@ -48,7 +48,7 @@ const AddUser: React.FC = () => {
             }
 
             try {
-                const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/roles/`, {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-roles/`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

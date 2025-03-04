@@ -77,8 +77,7 @@ const Users: React.FC = () => {
         }
       })
       .catch((error) => {
-        console.error("Error fetching users:", error);
-        setError("Failed to fetch users. Please check your permissions and try again.");
+        setError(error.response.data.message)
       })
       .finally(() => {
         setLoading(false);
@@ -109,8 +108,6 @@ const Users: React.FC = () => {
         gender: updatedUser.gender,
         role: updatedUser.role // This will be the role name (e.g., "staff")
       };
-
-      console.log("Sending data to update user:", dataToSend);
 
       const response = await axios.put(
         `${import.meta.env.VITE_SERVER_API}/api/v1/user/${userToEdit?._id}`,
@@ -456,9 +453,7 @@ const Users: React.FC = () => {
                   )}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 font-semibold">
-                      {user?.role.name === "admin" && "Admin"}
-                      {user?.role.name === "staff" && "Staff"}
-                      {user?.role.name === "user" && "User"}
+                      {user?.role.name.charAt(0).toUpperCase() + user?.role.name.slice(1)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

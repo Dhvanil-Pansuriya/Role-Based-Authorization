@@ -58,8 +58,11 @@ const EditRolePage: React.FC = () => {
         setError("Failed to fetch role: Invalid response format");
       }
     } catch (error) {
-      console.error("Error fetching role:", error);
-      setError("Failed to fetch role. Please check your permissions and try again.");
+      if (axios.isAxiosError(error) && error.response) {
+        setError(error.response.data.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     }
     setLoading(false);
 
@@ -78,15 +81,18 @@ const EditRolePage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      
       if (response.data.success) {
-        setAllPermissions(response.data.data.permissions);
+        setAllPermissions(response.data.data);
       } else {
         setError("Failed to fetch permissions: Invalid response format");
       }
     } catch (error) {
-      console.error("Error fetching permissions:", error);
-      setError("Failed to fetch permissions. Please check your permissions and try again.");
+      if (axios.isAxiosError(error) && error.response) {
+        setError(error.response.data.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     }
   };
 
