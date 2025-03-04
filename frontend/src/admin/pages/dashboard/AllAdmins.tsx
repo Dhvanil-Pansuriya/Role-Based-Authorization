@@ -27,10 +27,11 @@ interface User {
   email_verified_at: string | null;
   createdAt: string;
   updatedAt: string;
-  role: Role; // Updated to Role object
+  role: Role;
   token: string;
-  password?: string; // Optional since it's not displayed
+  password?: string;
 }
+
 type SortKey = "name" | "email"
 
 const AllAdmins: React.FC = () => {
@@ -66,7 +67,7 @@ const AllAdmins: React.FC = () => {
       })
       .then((response) => {
         if (response.data.success) {
-          setAdmins(response.data.data.admins); // Directly set the admins array
+          setAdmins(response.data.data.admins);
         } else {
           setError("Failed to fetch admins: Invalid response format");
         }
@@ -156,12 +157,12 @@ const AllAdmins: React.FC = () => {
     }
 
     try {
-      // Send the role name as a string
+     
       const dataToSend = {
         name: updatedUser.name,
         email: updatedUser.email,
         gender: updatedUser.gender,
-        role: updatedUser.role // This will be the role name (e.g., "staff")
+        role: updatedUser.role
       };
 
       const response = await axios.put(
@@ -173,6 +174,16 @@ const AllAdmins: React.FC = () => {
           },
         }
       );
+
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+      if (currentUser?._id === userToEdit?._id) {
+        dispatch(updateUser({ 
+          name: updatedUser.name, 
+          email: updatedUser.email, 
+          gender: updatedUser.gender 
+        }));
+      }
 
       if (response.data.success) {
         setAdmins((prevUsers) =>

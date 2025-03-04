@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ValidationErrors {
     name?: string;
@@ -20,7 +21,8 @@ const AddPermission: React.FC = () => {
 
     const NAME_CHAR_LIMIT = 255;
     const DESCRIPTION_CHAR_LIMIT = 500;
-    const NAME_REGEX = /^[a-z0-9_]+$/; // Only lowercase letters, numbers, and underscores
+    const NAME_REGEX = /^[a-z0-9_]+$/;
+    const navigate = useNavigate();
 
     const validateForm = (): boolean => {
         const newErrors: ValidationErrors = {};
@@ -103,6 +105,8 @@ const AddPermission: React.FC = () => {
                 name: '',
                 description: ''
             });
+
+            navigate("/dashboard/allpermissions");
             setErrors({});
         } catch (error: any) {
             if (error.response?.data?.message === "Permission already exists") {
@@ -174,13 +178,18 @@ const AddPermission: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-end mt-6">
+                        <div className="flex justify-end mt-6 space-x-4">
+                            <button
+                                onClick={() => navigate("/dashboard/allpermissions")}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-sm text-gray-700 bg-white hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className={`px-4 py-2 border border-transparent rounded-sm shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 ${
-                                    isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
-                                }`}
+                                className={`px-4 py-2 border border-transparent rounded-sm shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+                                    }`}
                             >
                                 {isSubmitting ? (
                                     <span className="flex items-center">
@@ -198,9 +207,8 @@ const AddPermission: React.FC = () => {
                     </form>
 
                     {message && (
-                        <div className={`mt-6 p-4 rounded-sm transition-all duration-500 ease-in-out animate-slideIn ${
-                            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-                        }`}>
+                        <div className={`mt-6 p-4 rounded-sm transition-all duration-500 ease-in-out animate-slideIn ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                            }`}>
                             <div className="flex items-center">
                                 {message.type === 'success' ? (
                                     <CheckCircle className="h-5 w-5 mr-2 text-green-500" />

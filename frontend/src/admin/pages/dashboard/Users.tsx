@@ -10,6 +10,8 @@ import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
 import ViewUserModal from "../../utils/ViewUserModal"
+import { updateUser } from "../../../features/users/userSlice"
+import { useDispatch } from "react-redux"
 
 interface Role {
   _id: string;
@@ -50,6 +52,7 @@ const Users: React.FC = () => {
   const [userToView, setUserToView] = useState<User | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -118,6 +121,17 @@ const Users: React.FC = () => {
           },
         }
       );
+
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+      if (currentUser?._id === userToEdit?._id) {
+        dispatch(updateUser({
+          name: updatedUser.name,
+          email: updatedUser.email,
+          gender: updatedUser.gender
+        }));
+      }
+
 
       if (response.data.success) {
         setUsers((prevUsers) =>
@@ -463,7 +477,7 @@ const Users: React.FC = () => {
                     </button>
                     <button
                       className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "admin" || user.role.name === "staff" ? "cursor-not-allowed opacity-50" : ""
-                      }`}
+                        }`}
                       onClick={() => user.role.name !== "admin" && user.role.name !== "staff" && openDeleteModal(user._id)}
                       disabled={user.role.name === "admin" || user.role.name === "staff"}
                     >

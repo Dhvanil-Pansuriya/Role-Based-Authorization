@@ -2,7 +2,6 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 
-// Define a customizable object for route names
 const routeNames: { [key: string]: string } = {
     'dashboard': 'Home',
     'alladminsusers': "All Admins & Users",
@@ -25,11 +24,20 @@ const Breadcrumbs: React.FC = () => {
     const location = useLocation();
     const pathnames = location.pathname.split("/").filter((x) => x);
 
+
+    const isId = (str: string) => {
+        return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str) ||
+            /^[0-9a-fA-F]{24}$/.test(str) ||
+            /^\d+$/.test(str);
+    };
+
+    const displayablePaths = pathnames.filter(name => !isId(name));
+
     return (
         <nav className="flex items-center text-sm text-gray-600">
-            {pathnames.map((name, index) => {
-                const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
-                const isLast = index === pathnames.length - 1;
+            {displayablePaths.map((name, index) => {
+                const routeTo = `/${pathnames.slice(0, pathnames.indexOf(name) + 1).join("/")}`;
+                const isLast = index === displayablePaths.length - 1;
                 const displayName = routeNames[name] || name;
 
                 return (
@@ -52,4 +60,3 @@ const Breadcrumbs: React.FC = () => {
 };
 
 export default Breadcrumbs;
-
