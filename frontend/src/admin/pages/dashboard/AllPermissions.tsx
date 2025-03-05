@@ -29,7 +29,7 @@ const AllPermissions: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [permissionsPerPage] = useState(20)
+  const [permissionsPerPage] = useState(10)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [permissionToDelete, setPermissionToDelete] = useState<string | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)

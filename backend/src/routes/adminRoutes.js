@@ -29,3 +29,4 @@ router.get("/get-all-roles", verifyToken, authorizeRole("admin", "staff"), getAl
 router.get("/get-all-permissions", verifyToken, authorizeRole("admin", "staff"), getAllPermissions);
 
 export default router;
+  
