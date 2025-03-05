@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import Permission from "../models/permission.model.js";
 import { successResponse, errorResponse } from "../utils/apiResponse.js";
+import jwt from "jsonwebtoken";
 
 const getTotalUsers = async (req, res) => {
   try {
@@ -127,6 +128,31 @@ const getAllPermissions = async (req, res) => {
   }
 };
 
+const getRoleFromUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) {
+      return errorResponse(res, "No user ID provided", 400);
+    }
+
+    const user = await User.findById(userId).populate({
+      path: 'role',
+      populate: {
+        path: 'permissions',
+        model: 'Permission'
+      }
+    });
+
+    if (!user) {
+      return errorResponse(res, "User not found", 404);
+    }
+
+    successResponse(res, { role: user.role });
+  } catch (error) {
+    errorResponse(res, "Error retrieving role from user ID", 500);
+  }
+};
+
 export {
   getTotalUsers,
   getTotalStaff,
@@ -138,4 +164,5 @@ export {
   getAllAdmins,
   getAllRoles,
   getAllPermissions,
+  getRoleFromUserId,
 };

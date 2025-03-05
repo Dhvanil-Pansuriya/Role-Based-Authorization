@@ -10,6 +10,7 @@ import {
   getAllStaff,
   getAllRoles,
   getAllPermissions,
+  getRoleFromUserId,
 } from "../controller/adminController.js";
 import authorizeRole from "../middlewares/roleMiddlewares.js";
 import { verifyToken } from "../middlewares/authMiddlewares.js";
@@ -27,6 +28,7 @@ router.get("/get-all-admins", verifyToken, authorizeRole("admin","staff"), getAl
 router.get("/get-all-staff", verifyToken, authorizeRole("admin","staff"), getAllStaff);
 router.get("/get-all-roles", verifyToken, authorizeRole("admin", "staff"), getAllRoles);
 router.get("/get-all-permissions", verifyToken, authorizeRole("admin", "staff"), getAllPermissions);
+router.get("/get-role-from-user-id/:userId", verifyToken, authorizeRole("admin", "staff", "user"),getRoleFromUserId)
 
 export default router;
   

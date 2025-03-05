@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
 import ViewRoleModal from "../../utils/ViewRoleModal"
+import { useHasPermission } from "../../utils/permissions"
 
 interface Permission {
   _id: string;
@@ -44,6 +45,13 @@ const AllRoles: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [roleToView, setRoleToView] = useState<Role | null>(null)
   const navigate = useNavigate()
+
+
+  const canCreateRole = useHasPermission("create_role");
+  const canUpdateRole = useHasPermission("update_role");
+  const canDeleteRole = useHasPermission("delete_role");
+
+
 
   const fetchRoles = async () => {
     const token = localStorage.getItem("authToken");
@@ -237,12 +245,17 @@ const AllRoles: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          onClick={() => navigate("/dashboard/allroles/addrole")}
-        >
-          Add Role
-        </button>
+
+        {
+          canCreateRole && (
+            <button
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              onClick={() => navigate("/dashboard/allroles/addrole")}
+            >
+              Add Role
+            </button>
+          )
+        }
       </div>
       <div className="bg-white shadow rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -330,19 +343,28 @@ const AllRoles: React.FC = () => {
                     <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openViewModal(role)}>
                       <Eye size={20} className="inline-block" />
                     </button>
-                    <button
-                      className={`text-gray-600 hover:text-gray-800 mx-1 ${role.name === "admin" || role.name === "staff" || role.name === "user" ? "cursor-not-allowed opacity-50" : ""}`}
-                      onClick={() => role.name !== "admin" && openDeleteModal(role._id)}
-                      disabled={role.name === "admin"}
-                    >
-                      <Trash2 size={20} className="inline-block" />
-                    </button>
-                    <button
-                      className="text-gray-600 hover:text-gray-800 mx-1"
-                      onClick={() => navigate(`/dashboard/allroles/editrole/${role._id}`)}
-                    >
-                      <Edit size={20} className="inline-block" />
-                    </button>
+                    {
+                      canDeleteRole && (
+
+                        <button
+                          className={`text-gray-600 hover:text-gray-800 mx-1 ${["admin", "staff", "user"].includes(role.name) ? "cursor-not-allowed opacity-50" : ""}`}
+                          onClick={() => !["admin", "staff", "user"].includes(role.name) && openDeleteModal(role._id)}
+                          disabled={["admin", "staff", "user"].includes(role.name)}
+                        >
+                          <Trash2 size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
+                    {
+                      canUpdateRole && (
+                        <button
+                          className="text-gray-600 hover:text-gray-800 mx-1"
+                          onClick={() => navigate(`/dashboard/allroles/editrole/${role._id}`)}
+                        >
+                          <Edit size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
                   </td>
                 </tr>
               ))}

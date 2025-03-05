@@ -9,6 +9,7 @@ import { updateUser } from "../../../features/users/userSlice"
 import { useDispatch } from "react-redux"
 import toast, { Toaster } from 'react-hot-toast'
 import ViewUserModal from "../../utils/ViewUserModal"
+import { useHasPermission } from "../../utils/permissions"
 
 interface Role {
   _id: string;
@@ -46,6 +47,11 @@ const AllStaff: React.FC = () => {
   const [userToView, setUserToView] = useState<User | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
 
+  const canCreateUser = useHasPermission("create_user")
+  const canUpdateUser = useHasPermission("update_user")
+  const canDeleteUser = useHasPermission("delete_user")
+
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -76,7 +82,8 @@ const AllStaff: React.FC = () => {
           setError(error.response.data.message);
         } else {
           setError("An unexpected error occurred");
-        }      })
+        }
+      })
       .finally(() => {
         setLoading(false);
       });
@@ -176,6 +183,17 @@ const AllStaff: React.FC = () => {
         }
       );
 
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+      if (currentUser?._id === userToEdit?._id) {
+        dispatch(updateUser({
+          name: updatedUser.name,
+          email: updatedUser.email,
+          gender: updatedUser.gender
+        }));
+      }
+
+
       if (response.data.success) {
         setStaff((prevUsers) =>
           prevUsers.map((user) =>
@@ -251,7 +269,7 @@ const AllStaff: React.FC = () => {
       }
     }
   }
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center">
@@ -278,12 +296,17 @@ const AllStaff: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          onClick={() => navigate("/dashboard/adduser")}
-        >
-          Add Staff
-        </button>
+        {
+          canCreateUser && (
+
+            <button
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              onClick={() => navigate("/dashboard/adduser")}
+            >
+              Add Staff
+            </button>
+          )
+        }
       </div>
       <div className="bg-white shadow rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -389,9 +412,13 @@ const AllStaff: React.FC = () => {
                     <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openViewModal(user)}>
                       <Eye size={20} className="inline-block" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(user)}>
-                      <Edit size={20} className="inline-block" />
-                    </button>
+                    {
+                      canUpdateUser && (
+                        <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(user)}>
+                          <Edit size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
                   </td>
                 </tr>
               ))}

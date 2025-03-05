@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
 import ViewUserModal from "../../utils/ViewUserModal"
+import { useHasPermission } from "../../utils/permissions"
 
 interface Role {
   _id: string;
@@ -50,6 +51,11 @@ const AllUsers: React.FC = () => {
   const [userToView, setUserToView] = useState<User | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const navigate = useNavigate()
+
+  const canCreateUser = useHasPermission("create_user")
+  const canUpdateUser = useHasPermission("update_user")
+  const canDeleteUser = useHasPermission("delete_user")
+
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -349,12 +355,16 @@ const AllUsers: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          onClick={() => navigate("/dashboard/adduser")}
-        >
-          Add User
-        </button>
+        {
+          canCreateUser && (
+            <button
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              onClick={() => navigate("/dashboard/adduser")}
+            >
+              Add User
+            </button>
+          )
+        }
       </div>
       <div className="bg-white shadow rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -460,17 +470,26 @@ const AllUsers: React.FC = () => {
                     <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openViewModal(user)}>
                       <Eye size={20} className="inline-block" />
                     </button>
-                    <button
-                      className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "admin" ? "cursor-not-allowed opacity-50" : ""
-                        }`}
-                      onClick={() => user.role.name !== "Admin" && openDeleteModal(user._id)}
-                      disabled={user.role.name === "Admin"}
-                    >
-                      <Trash2 size={20} className="inline-block" />
-                    </button>
-                    <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(user)}>
-                      <Edit size={20} className="inline-block" />
-                    </button>
+
+                    {
+                      canDeleteUser && (
+                        <button
+                          className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "admin" ? "cursor-not-allowed opacity-50" : ""
+                            }`}
+                          onClick={() => user.role.name !== "Admin" && openDeleteModal(user._id)}
+                          disabled={user.role.name === "Admin"}
+                        >
+                          <Trash2 size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
+                    {
+                      canUpdateUser && (
+                        <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(user)}>
+                          <Edit size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
                   </td>
                 </tr>
               ))}

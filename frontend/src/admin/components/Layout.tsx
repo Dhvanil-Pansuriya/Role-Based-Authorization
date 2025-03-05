@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Home, Settings, Users, ChevronLeft, ChevronRight, ChevronDown, Shield, UsersRound, UserCog, PencilRuler, BarChartHorizontal, UserCheck } from 'lucide-react';
 import Navbar from '../../components/Navbar';
+import { useHasPermission } from '../utils/permissions';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,17 +20,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: 'Users',
       icon: Users,
       subItems: [
-        { name: 'All Users', href: '/dashboard/users', icon:Users },
-        { name: 'Only Users', href: '/dashboard/users/allusers', icon: UsersRound },
-        { name: 'Only Admins', href: '/dashboard/users/alladmins', icon: Shield },
-        { name: 'Only Staff', href: '/dashboard/users/allstaff', icon: UserCheck },
+        { name: 'All Users', href: '/dashboard/users', icon: Users, permission: "view_users" },
+        { name: 'Only Users', href: '/dashboard/users/allusers', icon: UsersRound, permission: "view_users" },
+        { name: 'Only Admins', href: '/dashboard/users/alladmins', icon: Shield, permission: "view_users" },
+        { name: 'Only Staff', href: '/dashboard/users/allstaff', icon: UserCheck, permission: "view_users" },
       ],
+      permission: "view_users"
     },
-    { name: 'All Roles', href: '/dashboard/allroles', icon: UserCog },
-    { name: 'All Permissions', href: '/dashboard/allpermissions', icon: PencilRuler },
-    { name: 'Reports', href: '/dashboard/reports', icon: BarChartHorizontal},
+    { name: 'All Roles', href: '/dashboard/allroles', icon: UserCog, permission: "view_roles" },
+    { name: 'All Permissions', href: '/dashboard/allpermissions', icon: PencilRuler, permission: "view_permissions" },
+    { name: 'Reports', href: '/dashboard/reports', icon: BarChartHorizontal },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
+
+  // Filter navigation items based on permissions
+  const filteredNavigation = navigation.filter(item => {
+    if (item.permission) {
+      const approved_permission = useHasPermission(item.permission);
+      // console.log(item.permission, "=>", approved_permission);
+      return approved_permission
+    }
+    return true;
+  });
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleDesktopSidebar = () => setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);
@@ -61,7 +73,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           </div>
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {navigation.map((item) => (
+            {filteredNavigation.map((item) => (
               <div key={item.name}>
                 {item.subItems ? (
                   <>
@@ -137,7 +149,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           </div>
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {navigation.map((item) => (
+            {filteredNavigation.map((item) => (
               <div key={item.name}>
                 {item.subItems ? (
                   !isDesktopSidebarCollapsed ? (

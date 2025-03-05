@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
 import ViewPermissionModal from "../../utils/ViewPermissionModal"
+import { useHasPermission } from "../../utils/permissions"
 
 interface Permission {
   _id: string;
@@ -37,6 +38,13 @@ const AllPermissions: React.FC = () => {
   const [permissionToView, setPermissionToView] = useState<Permission | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const navigate = useNavigate()
+
+
+
+  const canCreatePermission = useHasPermission("create_permission");
+  const canUpdatePermission = useHasPermission("update_permission");
+  const canDeletePermission = useHasPermission("delete_permission");
+
 
   const fetchPermission = async () => {
     const token = localStorage.getItem("authToken");
@@ -86,7 +94,7 @@ const AllPermissions: React.FC = () => {
     setPermissionToEdit(null)
   }
 
- 
+
   const handleUpdate = async (updatedPermission: Partial<Permission>) => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -326,12 +334,17 @@ const AllPermissions: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          onClick={() => navigate("/dashboard/allpermissions/addpermissions")}
-        >
-          Add Permission
-        </button>
+
+        {
+          canCreatePermission && (
+            <button
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              onClick={() => navigate("/dashboard/allpermissions/addpermissions")}
+            >
+              Add Permission
+            </button>
+          )
+        }
       </div>
       <div className="bg-white shadow rounded-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -404,17 +417,26 @@ const AllPermissions: React.FC = () => {
                     <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openViewModal(permission)}>
                       <Eye size={20} className="inline-block" />
                     </button>
-                    <button
-                      className={`text-gray-600 hover:text-gray-800 mx-1 ${["create_user", "update_user", "delete_user", "view_users", "view_self"].includes(permission.name) ? "cursor-not-allowed opacity-50" : ""
-                        }`}
-                      onClick={() => !["create_user", "update_user", "delete_user", "view_users", "view_self"].includes(permission.name) && openDeleteModal(permission._id)}
-                      disabled={["create_user", "update_user", "delete_user", "view_users", "view_self"].includes(permission.name)}
-                    >
-                      <Trash2 size={20} className="inline-block" />
-                    </button>
-                    <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(permission)}>
-                      <Edit size={20} className="inline-block" />
-                    </button>
+
+                    {
+                      canDeletePermission && (
+                        <button
+                          className={`text-gray-600 hover:text-gray-800 mx-1 ${["create_user", "update_user", "delete_user", "view_users", "view_self"].includes(permission.name) ? "cursor-not-allowed opacity-50" : ""
+                            }`}
+                          onClick={() => !["create_user", "update_user", "delete_user", "view_users", "view_self"].includes(permission.name) && openDeleteModal(permission._id)}
+                          disabled={["create_user", "update_user", "delete_user", "view_users", "view_self"].includes(permission.name)}
+                        >
+                          <Trash2 size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
+                    {
+                      canUpdatePermission && (
+                        <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(permission)}>
+                          <Edit size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
                   </td>
                 </tr>
               ))}

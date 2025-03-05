@@ -29,15 +29,6 @@ router.get(
 );
 
 router.get(
-  "/manager",
-  verifyToken,
-  authorizeRole("admin", "manager"),
-  (req, res) => {
-    successResponse(res, "Manager Approved", req.user);
-  }
-);
-
-router.get(
   "/user",
   verifyToken,
   authorizeRole("admin", "staff", "user"),
