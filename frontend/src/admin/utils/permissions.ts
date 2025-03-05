@@ -77,8 +77,6 @@ export const useHasPermission = (permissionName: string): boolean => {
                 setLoading(false);
             } finally {
                 setLoading(false);
-                console.log("Fetched Permissions:", permissions);
-
             }
         };
         fetchPermissions();
