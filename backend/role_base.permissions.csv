@@ -1,0 +1,14 @@
+_id,name,description,__v,createdAt,updatedAt
+67bff674944192253fd83401,create_user,Create new users,0,2025-02-27T05:21:56.426Z,2025-03-04T10:52:35.362Z
+67bff674944192253fd83402,update_user,Update users,0,2025-02-27T05:21:56.427Z,2025-03-04T06:51:41.537Z
+67bff674944192253fd83403,delete_user,Delete users,0,2025-02-27T05:21:56.428Z,2025-02-27T05:21:56.428Z
+67bff674944192253fd83404,view_users,View all users,0,2025-02-27T05:21:56.428Z,2025-02-27T05:21:56.428Z
+67c6a49262bed8cf3d3c20e1,view_roles,View all roles\n ,0,2025-03-04T06:58:26.763Z,2025-03-04T06:58:38.773Z
+67c6a4b662bed8cf3d3c20f4,create_role,Add new role,0,2025-03-04T06:59:02.382Z,2025-03-04T07:02:16.689Z
+67c6a5b962bed8cf3d3c78ae,update_role,Update Role,0,2025-03-04T07:03:21.054Z,2025-03-04T07:03:21.054Z
+67c6a5cc62bed8cf3d3c7ea7,delete_role,Delete role,0,2025-03-04T07:03:40.251Z,2025-03-04T07:03:40.251Z
+67c6ad55b0ded7ff2a8b64e4,view_permissions,View all permissions,0,2025-03-04T07:35:49.436Z,2025-03-04T07:35:49.436Z
+67c6c9e3f76bca82446adb7d,create_permission,Create permission,0,2025-03-04T09:37:39.029Z,2025-03-04T09:37:39.029Z
+67c6ca5cf76bca82446adb96,update_permission,Update permission,0,2025-03-04T09:39:40.539Z,2025-03-04T09:39:40.539Z
+67c6ca6ef76bca82446adb9f,delete_permission,Delete permissions,0,2025-03-04T09:39:58.066Z,2025-03-04T09:39:58.066Z
+67ca76e757e07ef6b25981a5,export_orders,This is Export Orders permission,0,2025-03-07T04:32:39.912Z,2025-03-07T04:32:39.912Z
