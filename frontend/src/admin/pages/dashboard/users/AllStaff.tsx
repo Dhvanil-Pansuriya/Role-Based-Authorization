@@ -3,13 +3,13 @@ import type React from "react"
 import { useEffect, useState, useMemo } from "react"
 import axios from "axios"
 import { formatDistanceToNow } from "date-fns"
-import EditModal from "../../utils/EditModal"
+import EditModal from "../../../utils/EditModal"
 import { useNavigate } from "react-router-dom"
-import { updateUser } from "../../../features/users/userSlice"
+import { updateUser } from "../../../../features/users/userSlice"
 import { useDispatch } from "react-redux"
 import toast, { Toaster } from 'react-hot-toast'
-import ViewUserModal from "../../utils/ViewUserModal"
-import { useHasPermission } from "../../utils/permissions"
+import ViewUserModal from "../../../utils/ViewUserModal"
+import { useHasPermission } from "../../../utils/permissions"
 
 interface Role {
   _id: string;
@@ -28,21 +28,20 @@ interface User {
   email_verified_at: string | null;
   createdAt: string;
   updatedAt: string;
-  role: Role;
+  role: Role; // Updated to Role object
   token: string;
-  password?: string;
+  password?: string; // Optional since it's not displayed
 }
-
 type SortKey = "name" | "email"
 
-const AllAdmins: React.FC = () => {
-  const [admins, setAdmins] = useState<User[]>([])
+const AllStaff: React.FC = () => {
+  const [staff, setStaff] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: "ascending" | "descending" } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [adminsPerPage] = useState(10)
+  const [staffPerPage] = useState(10)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [userToEdit, setUserToEdit] = useState<User | null>(null)
   const [userToView, setUserToView] = useState<User | null>(null)
@@ -50,6 +49,7 @@ const AllAdmins: React.FC = () => {
 
   const canCreateUser = useHasPermission("create_user")
   const canUpdateUser = useHasPermission("update_user")
+  const canDeleteUser = useHasPermission("delete_user")
 
 
   const navigate = useNavigate()
@@ -65,16 +65,16 @@ const AllAdmins: React.FC = () => {
     }
 
     axios
-      .get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-admins`, {
+      .get(`${import.meta.env.VITE_SERVER_API}/get-all-staff`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         if (response.data.success) {
-          setAdmins(response.data.data.admins);
+          setStaff(response.data.data.staff); // Directly set the staff array
         } else {
-          setError("Failed to fetch admins: Invalid response format");
+          setError("Failed to fetch staff: Invalid response format");
         }
       })
       .catch((error) => {
@@ -97,32 +97,32 @@ const AllAdmins: React.FC = () => {
     setSortConfig({ key, direction })
   }
 
-  const sortedAdmins = useMemo(() => {
-    const sortableAdmins = [...admins]
+  const sortedStaff = useMemo(() => {
+    const sortableStaff = [...staff]
     if (sortConfig !== null) {
-      sortableAdmins.sort((a, b) => {
+      sortableStaff.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "ascending" ? -1 : 1
         if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "ascending" ? 1 : -1
         return 0
       })
     }
-    return sortableAdmins
-  }, [admins, sortConfig])
+    return sortableStaff
+  }, [staff, sortConfig])
 
-  const filteredAdmins = useMemo(() => {
-    return sortedAdmins.filter(
+  const filteredStaff = useMemo(() => {
+    return sortedStaff.filter(
       (user) =>
         user._id.includes(searchTerm.toLowerCase()) ||
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()),
     )
-  }, [sortedAdmins, searchTerm])
+  }, [sortedStaff, searchTerm])
 
 
-  const indexOfLastUser = currentPage * adminsPerPage
-  const indexOfFirstUser = indexOfLastUser - adminsPerPage
-  const currentAdmins = filteredAdmins.slice(indexOfFirstUser, indexOfLastUser)
-  const totalPages = Math.ceil(filteredAdmins.length / adminsPerPage)
+  const indexOfLastUser = currentPage * staffPerPage
+  const indexOfFirstUser = indexOfLastUser - staffPerPage
+  const currentStaff = filteredStaff.slice(indexOfFirstUser, indexOfLastUser)
+  const totalPages = Math.ceil(filteredStaff.length / staffPerPage)
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
@@ -165,16 +165,16 @@ const AllAdmins: React.FC = () => {
     }
 
     try {
-
+      // Send the role name as a string
       const dataToSend = {
         name: updatedUser.name,
         email: updatedUser.email,
         gender: updatedUser.gender,
-        role: updatedUser.role
+        role: updatedUser.role // This will be the role name (e.g., "staff")
       };
 
       const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/api/v1/user/${userToEdit?._id}`,
+        `${import.meta.env.VITE_SERVER_API}/user/${userToEdit?._id}`,
         dataToSend,
         {
           headers: {
@@ -193,8 +193,9 @@ const AllAdmins: React.FC = () => {
         }));
       }
 
+
       if (response.data.success) {
-        setAdmins((prevUsers) =>
+        setStaff((prevUsers) =>
           prevUsers.map((user) =>
             user._id === userToEdit?._id
               ? {
@@ -273,7 +274,7 @@ const AllAdmins: React.FC = () => {
     return (
       <div className="flex justify-center items-center">
         <Loader2 size={32} className="animate-spin mx-3 text-gray-600" />
-        <div className="text-center py-6">Loading admins...</div>
+        <div className="text-center py-6">Loading staff...</div>
       </div>
     )
   }
@@ -285,7 +286,7 @@ const AllAdmins: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">All Admins</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">All Staff</h1>
       </div>
       <div className="flex items-center justify-between">
         <input
@@ -295,14 +296,14 @@ const AllAdmins: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-
         {
           canCreateUser && (
+
             <button
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               onClick={() => navigate("/dashboard/adduser")}
             >
-              Add Admin
+              Add Staff
             </button>
           )
         }
@@ -351,7 +352,7 @@ const AllAdmins: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentAdmins.map((user, index) => (
+              {currentStaff.map((user, index) => (
                 <tr key={user._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{index + 1}</div>
@@ -431,8 +432,8 @@ const AllAdmins: React.FC = () => {
             <div>
               <p className="text-sm text-gray-700">
                 Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{" "}
-                <span className="font-medium">{Math.min(indexOfLastUser, filteredAdmins.length)}</span> of{" "}
-                <span className="font-medium">{filteredAdmins.length}</span> results
+                <span className="font-medium">{Math.min(indexOfLastUser, filteredStaff.length)}</span> of{" "}
+                <span className="font-medium">{filteredStaff.length}</span> results
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -510,4 +511,4 @@ const AllAdmins: React.FC = () => {
   )
 }
 
-export default AllAdmins
+export default AllStaff

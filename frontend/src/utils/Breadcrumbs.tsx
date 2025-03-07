@@ -17,7 +17,10 @@ const routeNames: { [key: string]: string } = {
     'users': 'Users',
     'addrole': "Add Role",
     'addpermissions': 'Add Permissions',
-    'editrole': 'Edit Role'
+    'editrole': 'Edit Role',
+    'exportorders': 'Export Orders',
+    'exportordersresult': 'Export Orders Result',
+    'exportresults' : 'Export Results'
 };
 
 const Breadcrumbs: React.FC = () => {

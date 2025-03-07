@@ -44,13 +44,13 @@ const AddRole: React.FC = () => {
             }
 
             try {
-                const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-permissions`, {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/get-all-permissions`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
                 setAvailablePermissions(response.data.data);
-             } catch (error: any) {
+            } catch (error: any) {
                 setError(error.response?.data?.message || 'Failed to fetch permissions.');
             } finally {
                 setIsLoading(false);
@@ -156,7 +156,7 @@ const AddRole: React.FC = () => {
         setIsSubmitting(true);
 
         try {
-            await axios.post(`${import.meta.env.VITE_SERVER_API}/api/v1/roles`, formData, {
+            await axios.post(`${import.meta.env.VITE_SERVER_API}/roles`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

@@ -4,12 +4,12 @@ import { ChevronLeft, ChevronRight, Edit, Eye, Loader2, Trash2 } from "lucide-re
 import type React from "react"
 import { useEffect, useState, useMemo } from "react"
 import axios from "axios"
-import ConfirmationModal from "../../utils/ConfirmationModal"
+import ConfirmationModal from "../../../utils/ConfirmationModal"
 import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
-import ViewRoleModal from "../../utils/ViewRoleModal"
-import { useHasPermission } from "../../utils/permissions"
+import ViewRoleModal from "../../../utils/ViewRoleModal"
+import { useHasPermission } from "../../../utils/permissions"
 
 interface Permission {
   _id: string;
@@ -63,7 +63,7 @@ const AllRoles: React.FC = () => {
     }
 
     try {
-      const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/roles`, {
+      const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/roles`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -107,7 +107,7 @@ const AllRoles: React.FC = () => {
     }
 
     axios
-      .delete(`${import.meta.env.VITE_SERVER_API}/api/v1/roles/${id}`, {
+      .delete(`${import.meta.env.VITE_SERVER_API}/roles/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

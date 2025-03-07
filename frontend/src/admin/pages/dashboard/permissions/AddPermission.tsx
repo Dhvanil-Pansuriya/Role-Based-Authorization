@@ -95,7 +95,7 @@ const AddPermission: React.FC = () => {
         setIsSubmitting(true);
 
         try {
-            await axios.post(`${import.meta.env.VITE_SERVER_API}/api/v1/permissions`, formData, {
+            await axios.post(`${import.meta.env.VITE_SERVER_API}/permissions`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

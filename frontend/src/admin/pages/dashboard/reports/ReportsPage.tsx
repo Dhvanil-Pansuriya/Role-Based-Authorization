@@ -63,27 +63,27 @@ const ReportsPage: React.FC = () => {
           rolesResponse,
           permissionsResponse,
         ] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-users`, {
+          axios.get(`${import.meta.env.VITE_SERVER_API}/total-users`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-staff`, {
+          axios.get(`${import.meta.env.VITE_SERVER_API}/total-staff`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-admins`, {
+          axios.get(`${import.meta.env.VITE_SERVER_API}/total-admins`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-roles`, {
+          axios.get(`${import.meta.env.VITE_SERVER_API}/total-roles`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-permissions`, {
+          axios.get(`${import.meta.env.VITE_SERVER_API}/total-permissions`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

@@ -4,13 +4,13 @@ import { ChevronLeft, ChevronRight, Edit, Eye, Loader2, Trash2 } from "lucide-re
 import type React from "react"
 import { useEffect, useState, useMemo } from "react"
 import axios from "axios"
-import ConfirmationModal from "../../utils/ConfirmationModal"
-import EditPermissionModal from "../../utils/EditPermissionModal"
+import ConfirmationModal from "../../../utils/ConfirmationModal"
+import EditPermissionModal from "../../../utils/EditPermissionModal"
 import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
-import ViewPermissionModal from "../../utils/ViewPermissionModal"
-import { useHasPermission } from "../../utils/permissions"
+import ViewPermissionModal from "../../../utils/ViewPermissionModal"
+import { useHasPermission } from "../../../utils/permissions"
 
 interface Permission {
   _id: string;
@@ -56,7 +56,7 @@ const AllPermissions: React.FC = () => {
     }
 
     axios
-      .get(`${import.meta.env.VITE_SERVER_API}/api/v1/permissions`, {
+      .get(`${import.meta.env.VITE_SERVER_API}/permissions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -104,7 +104,7 @@ const AllPermissions: React.FC = () => {
 
     try {
       const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/api/v1/permissions/${permissionToEdit?._id}`,
+        `${import.meta.env.VITE_SERVER_API}/permissions/${permissionToEdit?._id}`,
         updatedPermission,
         {
           headers: {
@@ -197,7 +197,7 @@ const AllPermissions: React.FC = () => {
     }
 
     axios
-      .delete(`${import.meta.env.VITE_SERVER_API}/api/v1/permissions/${id}`, {
+      .delete(`${import.meta.env.VITE_SERVER_API}/permissions/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

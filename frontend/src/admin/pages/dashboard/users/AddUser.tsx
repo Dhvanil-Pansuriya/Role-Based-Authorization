@@ -48,7 +48,7 @@ const AddUser: React.FC = () => {
             }
 
             try {
-                const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-roles/`, {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/get-all-roles/`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -137,7 +137,7 @@ const AddUser: React.FC = () => {
         setIsSubmitting(true);
 
         try {
-            await axios.post(`${import.meta.env.VITE_SERVER_API}/api/v1/user`, formData, {
+            await axios.post(`${import.meta.env.VITE_SERVER_API}/user`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

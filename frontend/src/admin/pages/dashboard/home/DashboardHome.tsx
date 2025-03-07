@@ -23,7 +23,7 @@ const DashboardHome: React.FC = () => {
 
     const fetchTotalUsers = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-users`, {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/total-users`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -37,7 +37,7 @@ const DashboardHome: React.FC = () => {
 
     const fetchTotalAdmins = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-admins`, {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/total-admins`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -51,7 +51,7 @@ const DashboardHome: React.FC = () => {
 
     const fetchTotalStaff = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-staff`, {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/total-staff`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -65,7 +65,7 @@ const DashboardHome: React.FC = () => {
 
     const fetchTotalRoles = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-roles`, {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/total-roles`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -79,7 +79,7 @@ const DashboardHome: React.FC = () => {
 
     const fetchTotalPermissions = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/total-permissions`, {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/total-permissions`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -123,7 +123,7 @@ const DashboardHome: React.FC = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
       <div className="grid grid-cols-1 xl:grid-cols-3 md:grid-cols-2 gap-6">
-      <Link to="/dashboard/users" >
+        <Link to="/dashboard/users" >
           <div className="bg-white rounded-sm shadow p-5">
             <div className="flex items-center justify-between">
               <div>

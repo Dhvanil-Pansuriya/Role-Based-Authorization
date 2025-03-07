@@ -59,7 +59,7 @@ export const useHasPermission = (permissionName: string): boolean => {
 
             try {
                 const response = await axios.get(
-                    `${import.meta.env.VITE_SERVER_API}/api/v1/get-role-from-user-id/${user._id}`,
+                    `${import.meta.env.VITE_SERVER_API}/get-role-from-user-id/${user._id}`,
                     {
                         headers: {
                             "Authorization": `Bearer ${authToken}`,

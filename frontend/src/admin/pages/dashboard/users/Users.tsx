@@ -1,15 +1,18 @@
-import { Edit, ChevronLeft, ChevronRight, Loader2, Eye } from "lucide-react"
+"use client"
+
+import { ChevronLeft, ChevronRight, Edit, Eye, Loader2, Trash2 } from "lucide-react"
 import type React from "react"
 import { useEffect, useState, useMemo } from "react"
 import axios from "axios"
+import ConfirmationModal from "../../../utils/ConfirmationModal"
+import EditModal from "../../../utils/EditModal"
 import { formatDistanceToNow } from "date-fns"
-import EditModal from "../../utils/EditModal"
 import { useNavigate } from "react-router-dom"
-import { updateUser } from "../../../features/users/userSlice"
-import { useDispatch } from "react-redux"
 import toast, { Toaster } from 'react-hot-toast'
-import ViewUserModal from "../../utils/ViewUserModal"
-import { useHasPermission } from "../../utils/permissions"
+import ViewUserModal from "../../../utils/ViewUserModal"
+import { updateUser } from "../../../../features/users/userSlice"
+import { useDispatch } from "react-redux"
+import { useHasPermission } from "../../../utils/permissions"
 
 interface Role {
   _id: string;
@@ -28,32 +31,34 @@ interface User {
   email_verified_at: string | null;
   createdAt: string;
   updatedAt: string;
-  role: Role; // Updated to Role object
+  role: Role; // Updated to Role object like in AllAdmins
   token: string;
   password?: string; // Optional since it's not displayed
 }
+
 type SortKey = "name" | "email"
 
-const AllStaff: React.FC = () => {
-  const [staff, setStaff] = useState<User[]>([])
+const Users: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: "ascending" | "descending" } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [staffPerPage] = useState(10)
+  const [usersPerPage] = useState(10)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<string | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [userToEdit, setUserToEdit] = useState<User | null>(null)
   const [userToView, setUserToView] = useState<User | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const canCreateUser = useHasPermission("create_user")
   const canUpdateUser = useHasPermission("update_user")
   const canDeleteUser = useHasPermission("delete_user")
 
-
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -65,78 +70,25 @@ const AllStaff: React.FC = () => {
     }
 
     axios
-      .get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-staff`, {
+      .get(`${import.meta.env.VITE_SERVER_API}/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         if (response.data.success) {
-          setStaff(response.data.data.staff); // Directly set the staff array
+          setUsers(response.data.data); // Directly set the users array based on AllAdmins pattern
         } else {
-          setError("Failed to fetch staff: Invalid response format");
+          setError("Failed to fetch users: Invalid response format");
         }
       })
       .catch((error) => {
-        if (axios.isAxiosError(error) && error.response) {
-          setError(error.response.data.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
+        setError(error.response.data.message)
       })
       .finally(() => {
         setLoading(false);
       });
   }, []);
-
-  const handleSort = (key: SortKey) => {
-    let direction: "ascending" | "descending" = "ascending"
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending"
-    }
-    setSortConfig({ key, direction })
-  }
-
-  const sortedStaff = useMemo(() => {
-    const sortableStaff = [...staff]
-    if (sortConfig !== null) {
-      sortableStaff.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "ascending" ? -1 : 1
-        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "ascending" ? 1 : -1
-        return 0
-      })
-    }
-    return sortableStaff
-  }, [staff, sortConfig])
-
-  const filteredStaff = useMemo(() => {
-    return sortedStaff.filter(
-      (user) =>
-        user._id.includes(searchTerm.toLowerCase()) ||
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-  }, [sortedStaff, searchTerm])
-
-
-  const indexOfLastUser = currentPage * staffPerPage
-  const indexOfFirstUser = indexOfLastUser - staffPerPage
-  const currentStaff = filteredStaff.slice(indexOfFirstUser, indexOfLastUser)
-  const totalPages = Math.ceil(filteredStaff.length / staffPerPage)
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1)
-    }
-  }
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
-    }
-  }
 
   const openEditModal = (user: User) => {
     setUserToEdit(user)
@@ -147,16 +99,6 @@ const AllStaff: React.FC = () => {
     setIsEditModalOpen(false)
     setUserToEdit(null)
   }
-  const openViewModal = (user: User) => {
-    setUserToView(user)
-    setIsViewModalOpen(true)
-  }
-
-  const closeViewModal = () => {
-    setIsViewModalOpen(false)
-    setUserToView(null)
-  }
-
   const handleUpdate = async (updatedUser: Partial<User & { role: string }>) => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -174,7 +116,7 @@ const AllStaff: React.FC = () => {
       };
 
       const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/api/v1/user/${userToEdit?._id}`,
+        `${import.meta.env.VITE_SERVER_API}/user/${userToEdit?._id}`,
         dataToSend,
         {
           headers: {
@@ -195,7 +137,7 @@ const AllStaff: React.FC = () => {
 
 
       if (response.data.success) {
-        setStaff((prevUsers) =>
+        setUsers((prevUsers) =>
           prevUsers.map((user) =>
             user._id === userToEdit?._id
               ? {
@@ -269,12 +211,141 @@ const AllStaff: React.FC = () => {
       }
     }
   }
+  const openDeleteModal = (id: string) => {
+    setUserToDelete(id)
+    setIsDeleteModalOpen(true)
+  }
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setUserToDelete(null)
+  }
+
+  const handleDelete = (id: string) => {
+    const token = localStorage.getItem("authToken")
+
+    if (!token) {
+      setError("No authentication token found. Please log in.")
+      return
+    }
+
+    axios
+      .delete(`${import.meta.env.VITE_SERVER_API}/user/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(() => {
+        const userToDelete = users.find((user) => user._id === id)
+        if (userToDelete) {
+          toast.success(`User ${userToDelete.name} has been deleted.`, {
+            style: {
+              border: '1px solid gray',
+              padding: '16px',
+              color: 'gray',
+            },
+            iconTheme: {
+              primary: 'red',
+              secondary: 'white',
+            },
+          })
+          setIsDeleteModalOpen(false)
+          setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id))
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting user:", error)
+        if (axios.isAxiosError(error) && error.response) {
+          toast.error(error.response.data.message, {
+            style: {
+              border: '1px solid gray',
+              padding: '16px',
+              color: 'gray',
+            },
+            iconTheme: {
+              primary: 'red',
+              secondary: 'white',
+            },
+          })
+        } else {
+          toast.error(`An unexpected error occurred`, {
+            style: {
+              border: '1px solid gray',
+              padding: '16px',
+              color: 'gray',
+            },
+            iconTheme: {
+              primary: 'red',
+              secondary: 'white',
+            },
+          })
+        }
+      })
+  }
+
+  const handleSort = (key: SortKey) => {
+    let direction: "ascending" | "descending" = "ascending"
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending"
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const sortedUsers = useMemo(() => {
+    const sortableUsers = [...users]
+    if (sortConfig !== null) {
+      sortableUsers.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "ascending" ? -1 : 1
+        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "ascending" ? 1 : -1
+        return 0
+      })
+    }
+    return sortableUsers
+  }, [users, sortConfig])
+
+  const filteredUsers = useMemo(() => {
+    return sortedUsers.filter(
+      (user) =>
+        user._id.includes(searchTerm.toLowerCase()) ||
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+  }, [sortedUsers, searchTerm])
+
+  const indexOfLastUser = currentPage * usersPerPage
+  const indexOfFirstUser = indexOfLastUser - usersPerPage
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage)
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
+  const openViewModal = (user: User) => {
+    setUserToView(user)
+    setIsViewModalOpen(true)
+  }
+
+  const closeViewModal = () => {
+    setIsViewModalOpen(false)
+    setUserToView(null)
+  }
 
   if (loading) {
     return (
       <div className="flex justify-center items-center">
         <Loader2 size={32} className="animate-spin mx-3 text-gray-600" />
-        <div className="text-center py-6">Loading staff...</div>
+        <div className="text-center py-6">Loading users...</div>
       </div>
     )
   }
@@ -286,7 +357,7 @@ const AllStaff: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">All Staff</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">All Users</h1>
       </div>
       <div className="flex items-center justify-between">
         <input
@@ -296,14 +367,14 @@ const AllStaff: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+
         {
           canCreateUser && (
-
             <button
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               onClick={() => navigate("/dashboard/adduser")}
             >
-              Add Staff
+              Add User
             </button>
           )
         }
@@ -352,7 +423,7 @@ const AllStaff: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentStaff.map((user, index) => (
+              {currentUsers.map((user, index) => (
                 <tr key={user._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{index + 1}</div>
@@ -393,9 +464,7 @@ const AllStaff: React.FC = () => {
                   )}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 font-semibold">
-                      {user?.role.name === "admin" && "Admin"}
-                      {user?.role.name === "staff" && "Staff"}
-                      {user?.role.name === "user" && "User"}
+                      {user?.role.name.charAt(0).toUpperCase() + user?.role.name.slice(1)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -412,6 +481,19 @@ const AllStaff: React.FC = () => {
                     <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openViewModal(user)}>
                       <Eye size={20} className="inline-block" />
                     </button>
+
+                    {
+                      canDeleteUser && (
+                        <button
+                          className={`text-gray-600 hover:text-gray-800 mx-1 ${user.role.name === "admin" || user.role.name === "staff" ? "cursor-not-allowed opacity-50" : ""
+                            }`}
+                          onClick={() => user.role.name !== "admin" && user.role.name !== "staff" && openDeleteModal(user._id)}
+                          disabled={user.role.name === "admin" || user.role.name === "staff"}
+                        >
+                          <Trash2 size={20} className="inline-block" />
+                        </button>
+                      )
+                    }
                     {
                       canUpdateUser && (
                         <button className="text-gray-600 hover:text-gray-800 mx-1" onClick={() => openEditModal(user)}>
@@ -432,8 +514,8 @@ const AllStaff: React.FC = () => {
             <div>
               <p className="text-sm text-gray-700">
                 Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{" "}
-                <span className="font-medium">{Math.min(indexOfLastUser, filteredStaff.length)}</span> of{" "}
-                <span className="font-medium">{filteredStaff.length}</span> results
+                <span className="font-medium">{Math.min(indexOfLastUser, filteredUsers.length)}</span> of{" "}
+                <span className="font-medium">{filteredUsers.length}</span> results
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -474,9 +556,7 @@ const AllStaff: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => paginate(page)}
-                      className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === page
-                        ? "z-10 bg-gray-600 text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
+                      className={`relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm ${currentPage === page ? "z-10 bg-gray-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"
                         }`}
                     >
                       {page}
@@ -496,19 +576,29 @@ const AllStaff: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={closeDeleteModal}
+          onConfirm={() => userToDelete !== null && handleDelete(userToDelete)}
+          title="Confirm Deletion"
+          message="Are you sure you want to delete this user? This action cannot be undone."
+        />
+        {/* Edit modal */}
         <EditModal isOpen={isEditModalOpen} onClose={closeEditModal} onSave={handleUpdate} user={userToEdit} />
         <ViewUserModal
           isOpen={isViewModalOpen}
           onClose={closeViewModal}
           user={userToView}
         />
-        <Toaster
-          position="bottom-right"
-          reverseOrder={false}
-        />
       </div>
+
+      <Toaster
+        position="bottom-right"
+        reverseOrder={false}
+      />
     </div>
   )
 }
 
-export default AllStaff
+export default Users

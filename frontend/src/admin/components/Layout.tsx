@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Settings, Users, ChevronLeft, ChevronRight, ChevronDown, Shield, UsersRound, UserCog, PencilRuler, BarChartHorizontal, UserCheck } from 'lucide-react';
+import { Menu, X, Home, Settings, Users, ChevronLeft, ChevronRight, ChevronDown, Shield, UsersRound, UserCog, PencilRuler, BarChartHorizontal, UserCheck, CalendarCheck2 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import { useHasPermission } from '../utils/permissions';
 
@@ -29,6 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     },
     { name: 'All Roles', href: '/dashboard/allroles', icon: UserCog, permission: "view_roles" },
     { name: 'All Permissions', href: '/dashboard/allpermissions', icon: PencilRuler, permission: "view_permissions" },
+    { name: 'Export Orders', href: '/dashboard/exportorders', icon: CalendarCheck2, permission: "export_orders" },
     { name: 'Reports', href: '/dashboard/reports', icon: BarChartHorizontal },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];

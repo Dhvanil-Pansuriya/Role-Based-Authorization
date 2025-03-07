@@ -4,13 +4,13 @@ import { ChevronLeft, ChevronRight, Edit, Eye, Loader2, Trash2 } from "lucide-re
 import type React from "react"
 import { useEffect, useState, useMemo } from "react"
 import axios from "axios"
-import ConfirmationModal from "../../utils/ConfirmationModal"
-import EditModal from "../../utils/EditModal"
+import ConfirmationModal from "../../../utils/ConfirmationModal"
+import EditModal from "../../../utils/EditModal"
 import { formatDistanceToNow } from "date-fns"
 import { useNavigate } from "react-router-dom"
 import toast, { Toaster } from 'react-hot-toast'
-import ViewUserModal from "../../utils/ViewUserModal"
-import { useHasPermission } from "../../utils/permissions"
+import ViewUserModal from "../../../utils/ViewUserModal"
+import { useHasPermission } from "../../../utils/permissions"
 
 interface Role {
   _id: string;
@@ -67,7 +67,7 @@ const AllUsers: React.FC = () => {
     }
 
     axios
-      .get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-users`, {
+      .get(`${import.meta.env.VITE_SERVER_API}/get-all-users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -115,7 +115,7 @@ const AllUsers: React.FC = () => {
       };
 
       const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/api/v1/user/${userToEdit?._id}`,
+        `${import.meta.env.VITE_SERVER_API}/user/${userToEdit?._id}`,
         dataToSend,
         {
           headers: {
@@ -218,7 +218,7 @@ const AllUsers: React.FC = () => {
     }
 
     axios
-      .delete(`${import.meta.env.VITE_SERVER_API}/api/v1/user/${id}`, {
+      .delete(`${import.meta.env.VITE_SERVER_API}/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

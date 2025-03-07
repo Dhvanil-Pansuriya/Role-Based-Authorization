@@ -48,7 +48,7 @@ const EditRolePage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/roles/${id}`, {
+      const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/roles/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -80,7 +80,7 @@ const EditRolePage: React.FC = () => {
     }
 
     try {
-      const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/get-all-permissions`, {
+      const response = await axios.get(`${import.meta.env.VITE_SERVER_API}/get-all-permissions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -142,7 +142,7 @@ const EditRolePage: React.FC = () => {
       };
 
       const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/api/v1/roles/${id}`,
+        `${import.meta.env.VITE_SERVER_API}/roles/${id}`,
         updatedRole,
         {
           headers: {
@@ -276,17 +276,17 @@ const EditRolePage: React.FC = () => {
                 </label>
               </div>
               {/* Undo Button */}
-                <button
+              <button
                 onClick={handleUndo}
                 disabled={!isPermissionsChanged} // Disable if no changes
                 className={`text-sm font-medium px-2 py-1 rounded-sm ${isPermissionsChanged
                   ? "text-gray-700 bg-gray-200 hover:bg-gray-300"
                   : "text-gray-400 bg-gray-100 cursor-not-allowed"
                   } flex items-center justify-center gap-2`}
-                >
+              >
                 <ListRestart className="h-6 w-6" />
                 Undo Changes
-                </button>
+              </button>
             </div>
           </div>
           {Object.entries(groupedPermissions).map(([category, permissions]) => (

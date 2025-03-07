@@ -8,6 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import permissionRoutes from "./routes/permissionRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import dispatchTrackRoutes from "./routes/dispatchtrackRoutes.js";
 
 config();
 connectDB();
@@ -23,6 +24,7 @@ app.use("/api/v1", userRoutes);
 app.use("/api/v1", roleRoutes);
 app.use("/api/v1", permissionRoutes);
 app.use("/api/v1", adminRoutes);
+app.use("/api/v1/dispatch", dispatchTrackRoutes);
 
 app.listen(PORT, () => {
   console.log(

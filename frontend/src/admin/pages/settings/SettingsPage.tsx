@@ -66,7 +66,7 @@ const SettingsPage: React.FC = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/api/v1/user/${user?._id}`,
+        `${import.meta.env.VITE_SERVER_API}/user/${user?._id}`,
         { name, gender },
         {
           headers: {

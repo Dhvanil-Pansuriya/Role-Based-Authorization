@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
         setError(null);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_SERVER_API}/api/v1/auth/signin`, {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_API}/auth/signin`, {
                 email,
                 password,
             });

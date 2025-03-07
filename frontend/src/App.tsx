@@ -2,22 +2,24 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './admin/pages/DashboardPage';
-import DashboardHome from './admin/pages/dashboard/DashboardHome';
-import ProfilePage from './admin/pages/dashboard/ProfilePage';
-import SettingsPage from './admin/pages/dashboard/SettingsPage';
-import ReportsPage from './admin/pages/dashboard/ReportsPage';
-import AllUsers from './admin/pages/dashboard/AllUsers';
+import DashboardHome from './admin/pages/dashboard/home/DashboardHome';
+import ProfilePage from './admin/pages/dashboard/profile/ProfilePage';
+import SettingsPage from './admin/pages/settings/SettingsPage';
+import ReportsPage from './admin/pages/dashboard/reports/ReportsPage';
+import AllUsers from './admin/pages/dashboard/users/AllUsers';
 import ProtectedRoute from './utils/ProtectedRoute';
 import Home from './user/Home';
-import AddUser from './admin/pages/dashboard/AddUser';
-import AllAdmins from './admin/pages/dashboard/AllAdmins';
-import AllStaff from './admin/pages/dashboard/AllStaff';
-import AllRoles from './admin/pages/dashboard/AllRoles';
-import AllPermissions from './admin/pages/dashboard/AllPermissions';
-import Users from './admin/pages/dashboard/Users';
-import AddRole from './admin/pages/dashboard/AddRole';
-import AddPermission from './admin/pages/dashboard/AddPermission';
+import AddUser from './admin/pages/dashboard/users/AddUser';
+import AllAdmins from './admin/pages/dashboard/users/AllAdmins';
+import AllStaff from './admin/pages/dashboard/users/AllStaff';
+import AllRoles from './admin/pages/dashboard/roles/AllRoles';
+import AllPermissions from './admin/pages/dashboard/permissions/AllPermissions';
+import Users from './admin/pages/dashboard/users/Users';
+import AddRole from './admin/pages/dashboard/roles/AddRole';
+import AddPermission from './admin/pages/dashboard/permissions/AddPermission';
 import EditRole from './admin/utils/EditRolePage';
+import ExportOrders from './admin/pages/dashboard/orders/OrderExport';
+import ExportResults from './admin/pages/dashboard/orders/OrderResults';
 
 const App: React.FC = () => {
   return (
@@ -44,10 +46,13 @@ const App: React.FC = () => {
             <Route path="allroles/addrole" element={<AddRole />} />
             <Route path="allpermissions" element={<AllPermissions />} />
             <Route path="allpermissions/addpermissions" element={<AddPermission />} />
+            <Route path="exportorders" element={<ExportOrders />} />
+            <Route path="exportorders/exportresults" element={<ExportResults />} />
+
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* <Route path="*" element={<Navigate to="/" />} /> */}
 
       </Routes>
 

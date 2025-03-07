@@ -18,11 +18,11 @@ const DashboardPage: React.FC = () => {
 
       try {
 
-        const adminPromise = axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/admin`, {
+        const adminPromise = axios.get(`${import.meta.env.VITE_SERVER_API}/admin`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const staffPromise = axios.get(`${import.meta.env.VITE_SERVER_API}/api/v1/staff`, {
+        const staffPromise = axios.get(`${import.meta.env.VITE_SERVER_API}/staff`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
